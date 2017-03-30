@@ -11,12 +11,11 @@ namespace Poc.Luis.Xamarin.Droid
     {
         SQLiteConnection ISQLite.GetConn()
         {
-            var sqliteFilename = "LuisXamarinPoc.db3";
-            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            string libraryPath = Path.Combine(documentsPath, "..", "Library");
-            var path = Path.Combine(libraryPath, sqliteFilename);
-            var conn = new SQLiteConnection(path);
-            return conn;
+                var sqliteFilename = "LuisXamarinPoc.db3";
+                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                var path = Path.Combine(documentsPath, sqliteFilename);
+                var conn = new SQLiteConnection(path);
+                return conn;
         }
     }
 }
