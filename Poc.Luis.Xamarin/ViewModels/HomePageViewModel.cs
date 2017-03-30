@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using PropertyChanged;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace Poc.Luis.Xamarin.ViewModels
 {
@@ -45,22 +46,26 @@ namespace Poc.Luis.Xamarin.ViewModels
         {
             get
             {
-                return new Action(async () =>
+                return new Action(() =>
                 {
-                    if (imgStream == null)
+                    Device.BeginInvokeOnMainThread(async () =>
                     {
-                        var toastConfig = new ToastConfig("Nenhuma imagem carregada")
+                        if (imgStream == null)
                         {
-                            BackgroundColor = System.Drawing.Color.Red,
-                            Duration = TimeSpan.FromMilliseconds(5000),
-                            MessageTextColor = System.Drawing.Color.White
-                        };
-                        _userDialogsService.Toast(toastConfig);
-                        return;
-                    }
+                            var toastConfig = new ToastConfig("Nenhuma imagem carregada")
+                            {
+                                BackgroundColor = System.Drawing.Color.Red,
+                                Duration = TimeSpan.FromMilliseconds(5000),
+                                MessageTextColor = System.Drawing.Color.White
+                            };
+                            _userDialogsService.Toast(toastConfig);
+                            return;
+                        }
 
-                    var ocrResult = await CallVisionCognitiveService(imgStream);
-                    ReadTextFromImage(ocrResult);
+                        _userDialogsService.ShowLoading();
+                        var ocrResult = await CallVisionCognitiveService(imgStream);
+                        ReadTextFromImage(ocrResult);
+                    });
                 });
             }
         }
@@ -69,60 +74,57 @@ namespace Poc.Luis.Xamarin.ViewModels
         {
             get
             {
-                return new Action(async () =>
+                return new Action(() =>
                 {
                     try
                     {
-                        await _mediaService.Initialize();
-
-                        if (App.OnEmulator || (!_mediaService.IsCameraAvailable || !_mediaService.IsTakePhotoSupported))
-                            file = await _mediaService.PickPhotoAsync();
-                        else
+                        Device.BeginInvokeOnMainThread(async () =>
                         {
-                            var cameraOptions = new StoreCameraMediaOptions
+                            await _mediaService.Initialize();
+
+                            if (App.OnEmulator || (!_mediaService.IsCameraAvailable || !_mediaService.IsTakePhotoSupported))
+                                file = await _mediaService.PickPhotoAsync();
+                            else
                             {
-                                AllowCropping = false,
-                                CompressionQuality = 100,
-                                CustomPhotoSize = 100,
-                                DefaultCamera = CameraDevice.Rear,
-                                SaveToAlbum = true,
-                                Directory = "Sample",
-                                Name = "photoTest.jpg"
-                            };
-                            file = await _mediaService.TakePhotoAsync(cameraOptions);
-                        }
+                                var cameraOptions = new StoreCameraMediaOptions
+                                {
+                                    AllowCropping = false,
+                                    CompressionQuality = 100,
+                                    CustomPhotoSize = 100,
+                                    DefaultCamera = CameraDevice.Rear,
+                                    SaveToAlbum = true,
+                                    Directory = "Sample",
+                                    Name = "photoTest.jpg"
+                                };
+                                file = await _mediaService.TakePhotoAsync(cameraOptions);
+                            }
 
-                        if (file == null)
-                            return;
-
-                        Device.BeginInvokeOnMainThread(() =>
-                        {
                             _userDialogsService.ShowLoading(null, MaskType.Gradient);
-                        });
 
-                        byte[] bytes;
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            file.GetStream().CopyTo(memoryStream);
-                            bytes = memoryStream.ToArray();
-                        }
+                            if (file == null)
+                                return;
 
-                        _imageService.Add(new Image
-                        {
-                            ImageBase64 = Convert.ToBase64String(bytes),
-                            RecordedDate = DateTime.Now
-                        });
+                            byte[] bytes;
+                            using (var memoryStream = new MemoryStream())
+                            {
+                                file.GetStream().CopyTo(memoryStream);
+                                bytes = memoryStream.ToArray();
+                            }
 
-                        imgStream = file.GetStream();
-                        ImgSource = ImageSource.FromStream(() =>
-                        {
-                            var img = file.GetStream();
-                            file.Dispose();
-                            return img;
-                        });
+                            _imageService.Add(new Image
+                            {
+                                ImageBase64 = Convert.ToBase64String(bytes),
+                                RecordedDate = DateTime.Now
+                            });
 
-                        Device.BeginInvokeOnMainThread(() =>
-                        {
+                            imgStream = file.GetStream();
+                            ImgSource = ImageSource.FromStream(() =>
+                            {
+                                var img = file.GetStream();
+                                file.Dispose();
+                                return img;
+                            });
+
                             _userDialogsService.HideLoading();
                         });
                     }
@@ -148,65 +150,61 @@ namespace Poc.Luis.Xamarin.ViewModels
 
         void ReadTextFromImage(OcrResults ocrResult)
         {
-            if (ocrResult == null)
+            Device.BeginInvokeOnMainThread(() =>
             {
-                var toastConfig = new ToastConfig("Erro na execução do OCR")
+                if (ocrResult == null)
                 {
-                    BackgroundColor = System.Drawing.Color.Red,
-                    Duration = TimeSpan.FromMilliseconds(5000),
-                    MessageTextColor = System.Drawing.Color.White
-                };
-                _userDialogsService.Toast(toastConfig);
-            }
-
-            foreach (var region in ocrResult.Regions)
-            {
-                foreach (var line in region.Lines)
-                {
-                    foreach (var word in line.Words)
+                    var toastConfig = new ToastConfig("Erro na execução do OCR")
                     {
-                        if (word.Text.Contains(""))
+                        BackgroundColor = System.Drawing.Color.Red,
+                        Duration = TimeSpan.FromMilliseconds(5000),
+                        MessageTextColor = System.Drawing.Color.White
+                    };
+                    _userDialogsService.Toast(toastConfig);
+                }
+
+                _userDialogsService.HideLoading();
+
+                foreach (var region in ocrResult.Regions)
+                {
+                    foreach (var line in region.Lines)
+                    {
+                        foreach (var word in line.Words)
                         {
-                            _productService.Add(new Product
+                            _userDialogsService.Confirm(new ConfirmConfig
                             {
-                                Name = "Produto Encontado",
-                                RecordedDate = DateTime.Now,
-                                Value = 1
+                                Message = $"Encontrei a seguinte palavra {word.Text}",
+                                OkText = "OK",
+                                Title = "OCR - Status"
                             });
                         }
                     }
                 }
-            }
+            });
         }
 
         public async Task<OcrResults> CallVisionCognitiveService(Stream imgStream)
         {
-            var client = new VisionServiceClient("4e0ff94636434833bdf313f7e605ba85");
-
             try
             {
-                var httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri("https://westus.api.cognitive.microsoft.com/vision/v1.0/analyze");
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+                OcrResults text;
 
-                var httpContent = new StreamContent(imgStream);
-                var result = await httpClient.PostAsync("?visualFeatures=Description,Tags&subscription-key=4e0ff94636434833bdf313f7e605ba85", httpContent);
+                var client = new VisionServiceClient("51644637681e498f8dff98b6d69a0c7f");
 
-                if (result.IsSuccessStatusCode)
-                {
-                    var data = await result.Content.ReadAsStringAsync();
+                using (var stream = imgStream)
+                    text = await client.RecognizeTextAsync(stream);
 
-                    if (!string.IsNullOrEmpty(data))
-                    {
-
-                    }
-                }
-
-                return new OcrResults();
+                return text;
             }
             catch (Exception ex)
             {
-                throw ex;
+                var toastConfig = new ToastConfig(ex.InnerException.Message)
+                {
+                    BackgroundColor = System.Drawing.Color.Red,
+                    MessageTextColor = System.Drawing.Color.White
+                };
+                _userDialogsService.Toast(toastConfig);
+                return null;
             }
         }
 
