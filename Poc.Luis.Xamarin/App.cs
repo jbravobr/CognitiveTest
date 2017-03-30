@@ -8,6 +8,7 @@ namespace Poc.Luis.Xamarin
     public class App : PrismApplication
     {
         public static SQLite.SQLiteConnection AppSQLiteConnection;
+        public static bool OnEmulator { get; set; } = true;
 
         protected override void OnInitialized()
         {

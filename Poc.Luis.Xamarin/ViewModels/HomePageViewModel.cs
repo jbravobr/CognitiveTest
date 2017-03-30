@@ -9,9 +9,12 @@ using System.IO;
 using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
 using System.Threading.Tasks;
+using PropertyChanged;
+using System.Net.Http;
 
 namespace Poc.Luis.Xamarin.ViewModels
 {
+    [ImplementPropertyChanged]
     public class HomePageViewModel : BindableBase
     {
         readonly IMedia _mediaService;
@@ -22,13 +25,14 @@ namespace Poc.Luis.Xamarin.ViewModels
         public DelegateCommand PickImgCmd { get; set; }
         public DelegateCommand AnalyseImgCmd { get; set; }
         Stream imgStream { get; set; }
+        MediaFile file { get; set; }
 
         public ImageSource ImgSource
         {
             get
             {
                 if (!_imageService.GetAll().Any())
-                    return "noimage.png";
+                    return ImageSource.FromFile("noimage.png");
 
                 var img = _imageService.GetAll().Last();
                 return ImageSource.FromStream(() => new MemoryStream(Convert.FromBase64String(img.ImageBase64)));
@@ -70,23 +74,30 @@ namespace Poc.Luis.Xamarin.ViewModels
                     {
                         await _mediaService.Initialize();
 
-                        if (!_mediaService.IsCameraAvailable || !_mediaService.IsTakePhotoSupported)
-                            await _mediaService.PickPhotoAsync();
-
-                        var cameraOptions = new StoreCameraMediaOptions
+                        if (App.OnEmulator || (!_mediaService.IsCameraAvailable || !_mediaService.IsTakePhotoSupported))
+                            file = await _mediaService.PickPhotoAsync();
+                        else
                         {
-                            AllowCropping = false,
-                            CompressionQuality = 100,
-                            CustomPhotoSize = 100,
-                            DefaultCamera = CameraDevice.Rear,
-                            SaveToAlbum = true,
-                            Directory = "Sample",
-                            Name = "photoTest.jpg"
-                        };
-                        var file = await _mediaService.TakePhotoAsync(cameraOptions);
+                            var cameraOptions = new StoreCameraMediaOptions
+                            {
+                                AllowCropping = false,
+                                CompressionQuality = 100,
+                                CustomPhotoSize = 100,
+                                DefaultCamera = CameraDevice.Rear,
+                                SaveToAlbum = true,
+                                Directory = "Sample",
+                                Name = "photoTest.jpg"
+                            };
+                            file = await _mediaService.TakePhotoAsync(cameraOptions);
+                        }
 
                         if (file == null)
                             return;
+                        
+                        Device.BeginInvokeOnMainThread(() =>
+                        {
+                            _userDialogsService.ShowLoading(null, MaskType.Gradient);
+                        });
 
                         byte[] bytes;
                         using (var memoryStream = new MemoryStream())
@@ -95,23 +106,18 @@ namespace Poc.Luis.Xamarin.ViewModels
                             bytes = memoryStream.ToArray();
                         }
 
-                        Device.BeginInvokeOnMainThread(() =>
-                        {
-                            _userDialogsService.ShowLoading(null, MaskType.Gradient);
-                        });
-
                         _imageService.Add(new Image
                         {
                             ImageBase64 = Convert.ToBase64String(bytes),
                             RecordedDate = DateTime.Now
                         });
 
+                        imgStream = file.GetStream();
                         ImgSource = ImageSource.FromStream(() =>
                         {
-                            imgStream = file.GetStream();
-
+                            var img = file.GetStream();
                             file.Dispose();
-                            return imgStream;
+                            return img;
                         });
 
                         Device.BeginInvokeOnMainThread(() =>
@@ -176,9 +182,19 @@ namespace Poc.Luis.Xamarin.ViewModels
         {
             var client = new VisionServiceClient("4e0ff94636434833bdf313f7e605ba85");
 
-            using (var photoStream = imgStream)
+            try
             {
-                return await client.RecognizeTextAsync(photoStream);
+                using (var photoStream = imgStream)
+                {
+                    return await client.RecognizeTextAsync(photoStream);
+                }
+
+                //var httpClient = new HttpClient();
+                //httpClient.BaseAddress = new Uri(https://westus.api.cognitive.microsoft.com/vision/v1.0/analyze
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 

@@ -190,7 +190,9 @@
     <AndroidResource Include="Resources\drawable-hdpi\ic_launcher.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_launcher.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_launcher.png" />
-    <AndroidResource Include="Resources\drawable\noimage.png" />
+    <AndroidResource Include="Resources\drawable\noimage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidResource>
     <AndroidResource Include="Resources\drawable-hdpi\noimage.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\noimage.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\noimage.png" />

@@ -6,32 +6,33 @@
              prism:ViewModelLocator.AutowireViewModel="True">
 
 	<ContentPage.Content>
-		<StackLayout Margin="5,30,5,5"
-		             VerticalOptions="FillAndExpand"
-		             Orientation="Vertical"
-		             Spacing="3">
-			<StackLayout.Children>
-				<Grid HorizontalOptions="CenterAndExpand">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-					</Grid.RowDefinitions>
-					<Frame Grid.Row="0"
-					       Grid.Column="0"
-					       WidthRequest="200"
-					       HeightRequest="200"
-					       CornerRadius="5"
-					       HasShadow="true"
-					       OutlineColor="Black" />
-					<Image Grid.Row="0"
-					       Grid.Column="0"
-					       Aspect="AspectFit"
-					       Source="{Binding ImgSource}" />
-				</Grid>
-			</StackLayout.Children>
-			<StackLayout Margin="50"
+		<ScrollView>
+			<StackLayout Margin="5,30,5,5"
+			             VerticalOptions="FillAndExpand"
+			             Orientation="Vertical"
+			             Spacing="3">
+				<StackLayout.Children>
+					<Grid HorizontalOptions="CenterAndExpand">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+						<Frame Grid.Row="0"
+						       Grid.Column="0"
+						       WidthRequest="200"
+						       HeightRequest="200"
+						       CornerRadius="5"
+						       HasShadow="true"
+						       OutlineColor="Black" />
+						<Image Grid.Row="0"
+						       Grid.Column="0"
+						       Aspect="AspectFit"
+						       Source="{Binding ImgSource}" />
+					</Grid>
+				</StackLayout.Children>
+				<StackLayout Margin="50"
 				             VerticalOptions="EndAndExpand"
 				             Spacing="5">
 					<StackLayout.Children>
@@ -51,6 +52,7 @@
 						        TextColor="White" />
 					</StackLayout.Children>
 				</StackLayout>
-		</StackLayout>
+			</StackLayout>
+		</ScrollView>
 	</ContentPage.Content>
 </ContentPage>
