@@ -42,6 +42,18 @@ namespace Poc.Luis.Xamarin.ViewModels
             {
                 return new Action(async () =>
                 {
+                    if (imgStream == null)
+                    {
+                        var toastConfig = new ToastConfig("Nenhuma imagem carregada")
+                        {
+                            BackgroundColor = System.Drawing.Color.Red,
+                            Duration = TimeSpan.FromMilliseconds(5000),
+                            MessageTextColor = System.Drawing.Color.White
+                        };
+                        _userDialogsService.Toast(toastConfig);
+                        return;
+                    }
+
                     var ocrResult = await CallVisionCognitiveService(imgStream);
                     ReadTextFromImage(ocrResult);
                 });
