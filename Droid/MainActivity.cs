@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using Acr.UserDialogs;
+using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Plugin.Permissions;
@@ -6,8 +7,8 @@ using Xamarin.Forms;
 
 namespace Poc.Luis.Xamarin.Droid
 {
-    [Activity(Label = "Poc.Luis.Xamarin.Droid",
-              Icon = "@drawable/icon",
+    [Activity(Label = "Cognitive Test",
+              Icon = "@drawable/ic_launcher",
               Theme = "@style/MyTheme",
               MainLauncher = true,
               ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
@@ -21,7 +22,7 @@ namespace Poc.Luis.Xamarin.Droid
             base.OnCreate(bundle);
 
             global::Xamarin.Forms.Forms.Init(this, bundle);
-            Acr.UserDialogs.UserDialogs.Init((Activity)Forms.Context);
+            UserDialogs.Init(() => (Activity)Forms.Context);
 
             LoadApplication(new App());
         }

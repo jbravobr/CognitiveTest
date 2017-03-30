@@ -1,10 +1,10 @@
 using System;
-
+using Acr.UserDialogs;
 using Android.App;
 using Android.OS;
 using Android.Runtime;
 using Plugin.CurrentActivity;
-
+ 
 namespace Poc.Luis.Xamarin.Droid
 {
 	//You can specify additional application information in this attribute
