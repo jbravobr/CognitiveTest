@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage x:Class="Poc.Luis.Xamarin.Views.HomePage"
+             xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+             prism:ViewModelLocator.AutowireViewModel="True">
+
+	<ContentPage.Content>
+		<StackLayout Margin="5,30,5,5"
+		             VerticalOptions="FillAndExpand"
+		             Orientation="Vertical"
+		             Spacing="3">
+			<StackLayout.Children>
+				<Grid HorizontalOptions="CenterAndExpand">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+					<Frame Grid.Row="0"
+					       Grid.Column="0"
+					       WidthRequest="200"
+					       HeightRequest="200"
+					       CornerRadius="5"
+					       HasShadow="true"
+					       OutlineColor="Black" />
+					<Image Grid.Row="0"
+					       Grid.Column="0"
+					       Aspect="AspectFit"
+					       Source="{Binding ImgSource}" />
+				</Grid>
+			</StackLayout.Children>
+			<StackLayout Margin="50"
+				             VerticalOptions="EndAndExpand"
+				             Spacing="5">
+					<StackLayout.Children>
+						<Button BackgroundColor="Green"
+						        BorderColor="Green"
+						        BorderRadius="5"
+						        BorderWidth="2"
+						        Command="{Binding PickImgCmd}"
+						        Text="Escolher imagem"
+						        TextColor="White" />
+						<Button BackgroundColor="Blue"
+						        BorderColor="Blue"
+						        BorderRadius="5"
+						        BorderWidth="2"
+						        Command="{Binding AnalyseImgCmd}"
+						        Text="Ler Imagem"
+						        TextColor="White" />
+					</StackLayout.Children>
+				</StackLayout>
+		</StackLayout>
+	</ContentPage.Content>
+</ContentPage>
