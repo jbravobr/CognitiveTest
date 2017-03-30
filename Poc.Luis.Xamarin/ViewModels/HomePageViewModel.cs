@@ -11,6 +11,7 @@ using Microsoft.ProjectOxford.Vision.Contract;
 using System.Threading.Tasks;
 using PropertyChanged;
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Poc.Luis.Xamarin.ViewModels
 {
@@ -93,7 +94,7 @@ namespace Poc.Luis.Xamarin.ViewModels
 
                         if (file == null)
                             return;
-                        
+
                         Device.BeginInvokeOnMainThread(() =>
                         {
                             _userDialogsService.ShowLoading(null, MaskType.Gradient);
@@ -184,13 +185,24 @@ namespace Poc.Luis.Xamarin.ViewModels
 
             try
             {
-                using (var photoStream = imgStream)
+                var httpClient = new HttpClient();
+                httpClient.BaseAddress = new Uri("https://westus.api.cognitive.microsoft.com/vision/v1.0/analyze");
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+
+                var httpContent = new StreamContent(imgStream);
+                var result = await httpClient.PostAsync("?visualFeatures=Description,Tags&subscription-key=4e0ff94636434833bdf313f7e605ba85", httpContent);
+
+                if (result.IsSuccessStatusCode)
                 {
-                    return await client.RecognizeTextAsync(photoStream);
+                    var data = await result.Content.ReadAsStringAsync();
+
+                    if (!string.IsNullOrEmpty(data))
+                    {
+
+                    }
                 }
 
-                //var httpClient = new HttpClient();
-                //httpClient.BaseAddress = new Uri(https://westus.api.cognitive.microsoft.com/vision/v1.0/analyze
+                return new OcrResults();
             }
             catch (Exception ex)
             {
