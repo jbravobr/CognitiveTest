@@ -10,9 +10,8 @@ using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
 using System.Threading.Tasks;
 using PropertyChanged;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Collections.Generic;
+using Prism.Navigation;
 
 namespace Poc.Luis.Xamarin.ViewModels
 {
@@ -21,8 +20,8 @@ namespace Poc.Luis.Xamarin.ViewModels
     {
         readonly IMedia _mediaService;
         readonly IUserDialogs _userDialogsService;
-        readonly IApplicationServices<Product> _productService;
         readonly IApplicationServices<Image> _imageService;
+        readonly INavigationService _navigationService;
 
         public DelegateCommand PickImgCmd { get; set; }
         public DelegateCommand AnalyseImgCmd { get; set; }
@@ -89,8 +88,8 @@ namespace Poc.Luis.Xamarin.ViewModels
                                 var cameraOptions = new StoreCameraMediaOptions
                                 {
                                     AllowCropping = false,
-                                    CompressionQuality = 100,
-                                    CustomPhotoSize = 100,
+                                    CompressionQuality = 50,
+                                    CustomPhotoSize = 50,
                                     DefaultCamera = CameraDevice.Rear,
                                     SaveToAlbum = true,
                                     Directory = "Sample",
@@ -99,10 +98,10 @@ namespace Poc.Luis.Xamarin.ViewModels
                                 file = await _mediaService.TakePhotoAsync(cameraOptions);
                             }
 
-                            _userDialogsService.ShowLoading(null, MaskType.Gradient);
-
                             if (file == null)
                                 return;
+                            
+                            _userDialogsService.ShowLoading(null, MaskType.Gradient);
 
                             byte[] bytes;
                             using (var memoryStream = new MemoryStream())
@@ -165,20 +164,26 @@ namespace Poc.Luis.Xamarin.ViewModels
 
                 _userDialogsService.HideLoading();
 
+                var listWords = new List<string>();
+
                 foreach (var region in ocrResult.Regions)
                 {
                     foreach (var line in region.Lines)
                     {
                         foreach (var word in line.Words)
                         {
-                            _userDialogsService.Confirm(new ConfirmConfig
-                            {
-                                Message = $"Encontrei a seguinte palavra {word.Text}",
-                                OkText = "OK",
-                                Title = "OCR - Status"
-                            });
+                            if (word != null && !string.IsNullOrEmpty(word.Text))
+                                listWords.Add(word.Text);
                         }
                     }
+                }
+
+                if (listWords.Any())
+                {
+                    var navParameters = new NavigationParameters();
+                    navParameters.Add("Words", listWords.Aggregate((arg1, arg2) => $"{arg1}{Environment.NewLine}{arg2}"));
+
+                    _navigationService.NavigateAsync("BlankPage", navParameters);
                 }
             });
         }
@@ -196,9 +201,9 @@ namespace Poc.Luis.Xamarin.ViewModels
 
                 return text;
             }
-            catch (Exception ex)
+            catch (ClientException ex)
             {
-                var toastConfig = new ToastConfig(ex.InnerException.Message)
+                var toastConfig = new ToastConfig(ex.Error.Message)
                 {
                     BackgroundColor = System.Drawing.Color.Red,
                     MessageTextColor = System.Drawing.Color.White
@@ -209,11 +214,11 @@ namespace Poc.Luis.Xamarin.ViewModels
         }
 
         public HomePageViewModel(IMedia mediaService, IUserDialogs userDialogsService,
-                                 IApplicationServices<Product> productService, IApplicationServices<Image> imageService)
+                                 INavigationService navigationService, IApplicationServices<Image> imageService)
         {
             _imageService = imageService;
             _mediaService = mediaService;
-            _productService = productService;
+            _navigationService = navigationService;
             _userDialogsService = userDialogsService;
 
             PickImgCmd = new DelegateCommand(PickImg);

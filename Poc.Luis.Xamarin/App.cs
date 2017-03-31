@@ -8,13 +8,13 @@ namespace Poc.Luis.Xamarin
     public class App : PrismApplication
     {
         public static SQLite.SQLiteConnection AppSQLiteConnection;
-        public static bool OnEmulator { get; set; } = true;
+        public static bool OnEmulator { get; set; } = false;
 
         protected override void OnInitialized()
         {
             try
             {
-                NavigationService.NavigateAsync("HomePage");
+                NavigationService.NavigateAsync("BaseNavigationPage/HomePage");
             }
             catch (Exception ex)
             {
@@ -32,6 +32,7 @@ namespace Poc.Luis.Xamarin
 
             Container.RegisterTypeForNavigation<HomePage>();
             Container.RegisterTypeForNavigation<BlankPage>();
+            Container.RegisterTypeForNavigation<BaseNavigationPage>();
         }
     }
 }

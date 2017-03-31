@@ -1,3 +1,22 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms" prism:ViewModelLocator.AutowireViewModel="True" x:Class="Poc.Luis.Xamarin.Views.BlankPage">
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage x:Class="Poc.Luis.Xamarin.Views.BlankPage"
+             xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+             Title="Palavras"
+             prism:ViewModelLocator.AutowireViewModel="True">
+
+	<ContentPage.Content>
+		<ScrollView>
+			<StackLayout Orientation="Vertical">
+				<StackLayout VerticalOptions="FillAndExpand">
+					<Label FontSize="16"
+					       LineBreakMode="WordWrap"
+					       Text="{Binding Words}"
+					       TextColor="Black" />
+				</StackLayout>
+			</StackLayout>
+		</ScrollView>
+	</ContentPage.Content>
+
 </ContentPage>

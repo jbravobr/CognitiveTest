@@ -1,16 +1,27 @@
-﻿using Prism.Commands;
-using Prism.Mvvm;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Prism.Mvvm;
+using Prism.Navigation;
+using PropertyChanged;
 
 namespace Poc.Luis.Xamarin.ViewModels
 {
-    public class BlankPageViewModel : BindableBase
+    [ImplementPropertyChanged]
+    public class BlankPageViewModel : BindableBase, INavigatedAware
     {
+        public string Words { get; set; }
+
         public BlankPageViewModel()
         {
+        }
 
+        public void OnNavigatedFrom(NavigationParameters parameters)
+        {
+            
+        }
+
+        public void OnNavigatedTo(NavigationParameters parameters)
+        {
+            if (parameters.ContainsKey("Words"))
+                Words = parameters["Words"].ToString();
         }
     }
 }
